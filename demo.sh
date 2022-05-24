@@ -27,6 +27,27 @@ then
 	readonly VERSION_OLD=$(cat $DEMO_DIR/version_old.txt)
 fi
 
+# check if alias flag is set
+for i in "$@"
+do
+	readonly ALIAS_NAME="$(basename $0 .sh)"
+
+	if [[ $i == "--add-alias" ]]
+	then
+		# check if alias already exists
+		if [[ $(cat ~/.bashrc | grep "alias $ALIAS_NAME=" | wc -l) = "1" ]]
+		then
+			echo "ERROR: Alias '$ALIAS_NAME' already exists"
+			exit 1
+		fi
+	
+		echo '' >> ~/.bashrc
+		echo "alias $ALIAS_NAME='./$ALIAS_NAME.sh \$@'" >> ~/.bashrc
+		echo "RESTART YOUR SHELL TO ACTIVATE THE ALIAS"
+		exit 0
+	fi
+done
+
 # check if build flag is set
 for i in "$@"
 do
