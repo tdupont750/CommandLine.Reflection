@@ -44,35 +44,37 @@ then
 fi
 
 # check if alias flag is set
-for i in "$@"
-do
-	if [[ $i == "--add-alias" ]]
+if [[ $1 == "--add-alias" ]]
+then
+
+	# check if alias already exists
+	if [[ $(cat ~/.bashrc | grep "alias $CLI_PROJ_NAM=" | wc -l) = "1" ]]
 	then
-	
-		# check if alias already exists
-		if [[ $(cat ~/.bashrc | grep "alias $CLI_PROJ_NAM=" | wc -l) = "1" ]]
-		then
-			echo "ERROR: Alias '$CLI_PROJ_NAM' already exists"
-			exit 1
-		fi
-	
-		echo '' >> ~/.bashrc
-		echo "alias $CLI_PROJ_NAM='./$CLI_PROJ_NAM.sh \$@'" >> ~/.bashrc
-		echo "========================================================"
-		echo "RESTART YOUR SHELL TO ACTIVATE THE '$CLI_PROJ_NAM' ALIAS"
-		echo "========================================================"
-		exit 0
+		echo "ERROR: Alias '$CLI_PROJ_NAM' already exists"
+		exit 1
 	fi
-done
+
+	echo '' >> ~/.bashrc
+	echo "alias $CLI_PROJ_NAM='./$CLI_PROJ_NAM.sh \$@'" >> ~/.bashrc
+	echo "========================================================"
+	echo "RESTART YOUR SHELL TO ACTIVATE THE '$CLI_PROJ_NAM' ALIAS"
+	echo "========================================================"
+	exit 0
+fi
 
 # check if build flag is set
-for i in "$@"
-do
-	if [[ $i == "--build-cli" ]]
-	then
-		readonly BUILD_FLAG=true
-	fi
-done
+if [[ $1 == "--build-cli" ]]
+then
+	readonly BUILD_FLAG=true
+fi
+
+if [[ $1 == "--print-log" ]]
+then
+	readonly LAST_LOG="$CLI_PROJ_LOG_DIR/$(ls -r -t $CLI_PROJ_LOG_DIR | tail -n 1)"
+	echo $LAST_LOG
+	cat $LAST_LOG
+	exit 0
+fi
 
 # build if: 1) dll does not exist, 2) build flag is set, or 3) version has changed
 if [[ ! -f $PROJ_DLL ]] || [[ $BUILD_FLAG == true ]] || [[ $VERSION_NEW != $VERSION_OLD ]]
@@ -99,7 +101,8 @@ then
 fi
 
 # create log file
-echo "$@" > $CLI_PROJ_LOG_TXT
+echo "$@
+" > $CLI_PROJ_LOG_TXT
 
 # execute command line
 dotnet $PROJ_DLL "$@" 2>&1 | tee -a $CLI_PROJ_LOG_TXT

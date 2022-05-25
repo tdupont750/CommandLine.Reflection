@@ -15,6 +15,7 @@ public static class Program
         var rootCommand = new RootCommand("Sample app for System.CommandLine") {Name = "demo"};
         rootCommand.AddOption(new Option("--add-alias", "Add alias for bash file to ~/.bashrc"));
         rootCommand.AddOption(new Option("--build-cli", "Rebuild the CLI tool"));
+        rootCommand.AddOption(new Option("--print-log", "Print the log form the last run"));
         
         Bootstrap(rootCommand);
 
