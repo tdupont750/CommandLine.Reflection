@@ -1,7 +1,5 @@
 # cli folder
-/.cli/**
-!/.cli/lshash/
-!/.cli/lshash/**
+/.cli/apps/
 
 # Rider
 .idea/
