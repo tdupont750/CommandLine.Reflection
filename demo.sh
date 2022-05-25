@@ -1,31 +1,46 @@
 #!/bin/bash
-# set -x
+#set -x
 
-# project specific variables
-readonly HASH_SRC='./src/'
+# ==================== PROJECT SPECIFIC VARIABLES ====================
+readonly PROJ_SRC='./src/'
 readonly PROJ_CSP='./src/DemoCliApp/DemoCliApp.csproj'
 readonly PROJ_DLL='./src/DemoCliApp/bin/Release/net6.0/DemoCliApp.dll'
-readonly DEMO_DIR='./.demo'
+# ====================================================================
+
+# script variables
+readonly CLI_DIR="./.cli"
+readonly CLI_LSH="$CLI_DIR/lshash/lshash.dll"
+readonly CLI_PROJ_NAM="$(basename $0 .sh)"
+readonly CLI_PROJ_DIR="$CLI_DIR/$CLI_PROJ_NAM"
+readonly CLI_PROJ_VER="$CLI_PROJ_DIR/version_old.txt"
+readonly CLI_PROJ_LOG_DIR="$CLI_PROJ_DIR/logs"
+readonly CLI_PROJ_LOG_TXT="$CLI_PROJ_LOG_DIR/$(date +%Y-%m-%d_%H-%M-%S_%N).txt"
 
 # always run from working directory of script
 cd $(dirname $0)
 
-# create log directory
-if [[ ! -d $DEMO_DIR/logs ]]
+# HASH_DIR
+
+# create cli project directories
+if [[ ! -d $CLI_PROJ_DIR ]]
 then
-	mkdir $DEMO_DIR/logs
+	mkdir $CLI_PROJ_DIR
+fi
+if [[ ! -d $CLI_PROJ_LOG_DIR ]]
+then
+	mkdir $CLI_PROJ_LOG_DIR
 fi
 
 # clean log dir (keep last 10), don't wait for result
-(ls $DEMO_DIR/logs -t | tail -n +10 | xargs -I{} rm "$DEMO_DIR/logs/{}") &
+(ls $CLI_PROJ_LOG -t | tail -n +10 | xargs -I{} rm "$CLI_PROJ_LOG/{}") &
 
 # run slow prerequisite processes in parallel
-readonly VERSION_NEW=$(dotnet $DEMO_DIR/lshash/lshash.dll $HASH_SRC 'bin|obj' '*.cs')
+readonly VERSION_NEW=$(dotnet $CLI_LSH $PROJ_SRC 'bin|obj' '*.cs')
 
 # load old version file
-if [[ -f $DEMO_DIR/version_old.txt ]]
+if [[ -f $CLI_PROJ_VER ]]
 then
-	readonly VERSION_OLD=$(cat $DEMO_DIR/version_old.txt)
+	readonly VERSION_OLD=$(cat $CLI_PROJ_VER)
 fi
 
 # check if alias flag is set
@@ -33,18 +48,19 @@ for i in "$@"
 do
 	if [[ $i == "--add-alias" ]]
 	then
-		readonly ALIAS_NAME="$(basename $0 .sh)"
 	
 		# check if alias already exists
-		if [[ $(cat ~/.bashrc | grep "alias $ALIAS_NAME=" | wc -l) = "1" ]]
+		if [[ $(cat ~/.bashrc | grep "alias $CLI_PROJ_NAM=" | wc -l) = "1" ]]
 		then
-			echo "ERROR: Alias '$ALIAS_NAME' already exists"
+			echo "ERROR: Alias '$CLI_PROJ_NAM' already exists"
 			exit 1
 		fi
 	
 		echo '' >> ~/.bashrc
-		echo "alias $ALIAS_NAME='./$ALIAS_NAME.sh \$@'" >> ~/.bashrc
-		echo "RESTART YOUR SHELL TO ACTIVATE THE ALIAS"
+		echo "alias $CLI_PROJ_NAM='./$CLI_PROJ_NAM.sh \$@'" >> ~/.bashrc
+		echo "========================================================"
+		echo "RESTART YOUR SHELL TO ACTIVATE THE '$CLI_PROJ_NAM' ALIAS"
+		echo "========================================================"
 		exit 0
 	fi
 done
@@ -64,28 +80,27 @@ then
 	# build flag is specified, so clean to force a build
 	if [[ $BUILD_FLAG == true ]]
 	then
-		dotnet clean -c Release $PROJ_CSP 2>&1 > $DEMO_DIR/dotnet_clean.txt
+		dotnet clean -c Release $PROJ_CSP 2>&1 > $CLI_PROJ_DIR/dotnet_clean.txt
 	fi
 
 	# build cli project
-	dotnet build -c Release --verbosity minimal $PROJ_CSP 2>&1 > $DEMO_DIR/dotnet_build.txt
+	dotnet build -c Release --verbosity minimal $PROJ_CSP 2>&1 > $CLI_PROJ_DIR/dotnet_build.txt
 
 	# print error if build fails
 	readonly BUILD_EXIT_CODE=$?
 	if [[ $BUILD_EXIT_CODE != 0 ]]
 	then
-		cat $DEMO_DIR/dotnet_build.txt
+		cat $CLI_PROJ_DIR/dotnet_build.txt
 		exit $BUILD_EXIT_CODE
 	fi
 	
 	# success, write the version and break
-	echo $VERSION_NEW > $DEMO_DIR/version_old.txt
+	echo $VERSION_NEW > $CLI_PROJ_VER
 fi
 
 # create log file
-readonly LOG_FILE="$DEMO_DIR/logs/$(date +%Y-%m-%d_%H-%M-%S_%N).txt"
-echo "$@" > $LOG_FILE
+echo "$@" > $CLI_PROJ_LOG_TXT
 
 # execute command line
-dotnet $PROJ_DLL "$@" 2>&1 | tee -a $LOG_FILE
+dotnet $PROJ_DLL "$@" 2>&1 | tee -a $CLI_PROJ_LOG_TXT
 exit $?

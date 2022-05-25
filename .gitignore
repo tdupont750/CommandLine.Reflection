@@ -1,7 +1,7 @@
-# demo folder
-/.demo/**
-!/.demo/lshash/
-!/.demo/lshash/**
+# cli folder
+/.cli/**
+!/.cli/lshash/
+!/.cli/lshash/**
 
 # Rider
 .idea/
