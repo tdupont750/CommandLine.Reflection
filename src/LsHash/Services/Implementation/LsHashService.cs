@@ -24,8 +24,8 @@ public class LsHashService : ILsHashService
 
         if (searchInputs.Count == 1)
             ProcessSearchInput(0);
-
-        Parallel.For(0, searchInputs.Count, ProcessSearchInput);
+        else
+            Parallel.For(0, searchInputs.Count, ProcessSearchInput);
 
         return hashes;
 

@@ -6,7 +6,7 @@ namespace DemoCliApp.Commands;
 public class LotsOfArgsCommand : ICliCommand
 {
     public void SetHandler(ICliHandler handler) => handler.Set((
-        [CliOption] string zedIsDead,
+        [CliOption] string someWords,
         [CliOption(Description = "C")] char c,
         [CliOption(Description = "I", IsRequired = true)] int i,
         [CliFlag] bool boolean,

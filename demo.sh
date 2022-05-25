@@ -2,7 +2,8 @@
 # set -x
 
 # project specific variables
-readonly PROJ_CPS='./src/DemoCliApp/DemoCliApp.csproj'
+readonly HASH_SRC='./src/'
+readonly PROJ_CSP='./src/DemoCliApp/DemoCliApp.csproj'
 readonly PROJ_DLL='./src/DemoCliApp/bin/Release/net6.0/DemoCliApp.dll'
 readonly DEMO_DIR='./.demo'
 
@@ -19,7 +20,7 @@ fi
 (ls $DEMO_DIR/logs -t | tail -n +10 | xargs -I{} rm "$DEMO_DIR/logs/{}") &
 
 # run slow prerequisite processes in parallel
-readonly VERSION_NEW=$(dotnet $DEMO_DIR/lshash/lshash.dll $(dirname $PROJ_CPS) 'bin|obj' '*.cs')
+readonly VERSION_NEW=$(dotnet $DEMO_DIR/lshash/lshash.dll $HASH_SRC 'bin|obj' '*.cs')
 
 # load old version file
 if [[ -f $DEMO_DIR/version_old.txt ]]
@@ -30,10 +31,10 @@ fi
 # check if alias flag is set
 for i in "$@"
 do
-	readonly ALIAS_NAME="$(basename $0 .sh)"
-
 	if [[ $i == "--add-alias" ]]
 	then
+		readonly ALIAS_NAME="$(basename $0 .sh)"
+	
 		# check if alias already exists
 		if [[ $(cat ~/.bashrc | grep "alias $ALIAS_NAME=" | wc -l) = "1" ]]
 		then
@@ -63,11 +64,11 @@ then
 	# build flag is specified, so clean to force a build
 	if [[ $BUILD_FLAG == true ]]
 	then
-		dotnet clean -c Release $PROJ_CPS 2>&1 > $DEMO_DIR/dotnet_clean.txt
+		dotnet clean -c Release $PROJ_CSP 2>&1 > $DEMO_DIR/dotnet_clean.txt
 	fi
 
 	# build cli project
-	dotnet build -c Release --verbosity minimal $PROJ_CPS 2>&1 > $DEMO_DIR/dotnet_build.txt
+	dotnet build -c Release --verbosity minimal $PROJ_CSP 2>&1 > $DEMO_DIR/dotnet_build.txt
 
 	# print error if build fails
 	readonly BUILD_EXIT_CODE=$?

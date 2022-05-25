@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ChildProcess\ChildProcess.csproj" />
       <ProjectReference Include="..\CommandLine.Reflection\CommandLine.Reflection.csproj" />
     </ItemGroup>
 
